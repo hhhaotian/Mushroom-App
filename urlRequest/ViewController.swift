@@ -8,20 +8,22 @@
 
 import UIKit
 
-struct Message{
-    let timestamp: String
-    let from: String
-    let msg: Dictionary<String, Any>
+struct Message: Decodable{
     
-    init(json: [String: Any]) {
-        timestamp = json["timestamp"] as? String ?? ""
-        from = json["from"] as? String ?? ""
-        msg = json["msg"] as? Dictionary<String, Any> ?? [:]
-        
-    }
+    let timestamp: String
+    let className: String
+    let classProb: String
+    let boxes: String
+    
 }
 
-var httpResponse: Int = 0
+struct Connection: Decodable {
+    let timestamp: String
+    let connection: String
+}
+
+
+var httpResponse: Int!
 
 class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate {
     
@@ -30,105 +32,80 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     @IBOutlet weak var imageView: UIImageView!
     
+    var predictImage: UIImage!
+    
+    var labelInfo: String!
+    
     override func viewDidLoad() {
-        
         
         
         super.viewDidLoad()
         // Do any additional setup after loading the view.
-//         let image: UIImage
-        
     }
     
     
     @IBAction func getRequest(_ sender: Any) {
-        
-        guard let url = URL(string: "http://35.201.9.84/") else {return}
-        let session = URLSession.shared
-        session.dataTask(with: url) { (data, response, error) in
-            
-            if let data = data{
-                do{
-                    guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {return}
-                    let message = Message(json: json)
-                    print(message.msg)
-//                    imageType.text = message.msg
+        myGETRequest()
+            { josn, error in
+                if let connection = josn as? Connection{
+//                    print(connection.timestamp)
+//                    print(httpResponse)
+//                    name = connection.timestamp
+//                    group.leave()
+                    self.labelInfo = connection.timestamp
+                    DispatchQueue.main.async() {
+                        // your UI update code
+                        if httpResponse == 200{
+                            self.label.text = self.labelInfo
+                        }
+                    }
                     
-                } catch{
-                    print(error)
                 }
-
-            }
             
-        }.resume()
+        }
+
+    }
+    
+    
+    
+    
+    @IBAction func postRequest(_ sender: Any) {
+        
+        myPOSTRequest(){
+            json, error in
+            if let json = json as? Message{
+                self.labelInfo = json.className
+//                var boxes: Array<Any>!
+//                boxes = json.boxes
+                DispatchQueue.main.async() {
+                    // your UI update code
+                    if httpResponse == 200{
+                        self.label.text = self.labelInfo
+//                        print(json.boxes)
+                    }
+                    if httpResponse == 500{
+                        self.label.text = "HTTP 500 Error"
+                    }
+                }
+                
+            }
+        }
         
     }
     
+    
     func encodeImage()-> Data{
 
-        let image = UIImage(named: "img856")
-//        let iamgeView = UIImageView(image: image)
-//        view.addSubview(iamgeView)
-        let imageData = image?.pngData()
+        let imageData = predictImage.pngData()
         let encodeing = imageData?.base64EncodedData()
         return encodeing!
 
     }
     
-   
-    
-    @IBAction func postRequest(_ sender: Any) {
-        
-        let output = encodeImage()
-        guard let url = URL(string: "http://35.201.9.84/api/test") else {return}
-        var request = URLRequest(url: url)
-        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
-        request.httpMethod = "POST"
-        request.httpBody = output
-        print(request)
-        var name: String?
-        let session = URLSession.shared
-        session.dataTask(with: request){
-            (data, response, error) in
-            if let response = response{
-//                print (response)
-                let httpStatus = response as? HTTPURLResponse
-                if httpStatus!.statusCode == 200{
-                    httpResponse = httpStatus!.statusCode
-                }
-            }
-            
-            if let data = data{
-                do{
-                    
-                    
-                    guard let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] else {return}
-//                    print(json)
-                    let message = Message(json: json)
-                    print(message.msg["className"]!)
-                    name = message.msg["className"] as! String
-                   
-
-                } catch{
-                    print(error)
-                }
-            }
-        }.resume()
-        
-        print(name)
-        if httpResponse == 200{
-//            print(name!)
-            label.text = name
-            print(name)
-        }
-        
-        
-    }
-    
     
     
     @IBAction func photoSource(_ sender: Any) {
-        label.text = "photo"
+        label.text = "Press POST buttom"
         print("photo button")
         let imagePickerController = UIImagePickerController()
         imagePickerController.delegate = self
@@ -167,6 +144,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         
         let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
+        self.predictImage = image
         imageView.image = image
         picker.dismiss(animated: true, completion: nil)
         
@@ -179,9 +157,68 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     
     
-//    func URLRequest(completion: @escaping ){
-//        
-//    }
+    func myGETRequest(completion: @escaping (_ json: Any?, _ error: Error?)->()){
+        guard let url = URL(string: "http://35.201.9.84/") else {return}
+        let session = URLSession.shared
+        session.dataTask(with: url) { (data, response, error) in
+            
+            if let response = response{
+                //                print (response)
+                let httpStatus = response as? HTTPURLResponse
+//                if httpStatus!.statusCode == 200{
+                    httpResponse = httpStatus!.statusCode
+                print(httpStatus!.statusCode)
+               
+            }
+            
+            if let data = data{
+                do{
+                    
+                    let connection = try JSONDecoder().decode(Connection.self, from: data)
+
+                    completion(connection, error)
+                    
+                } catch{
+                    print(error)
+                }
+                
+            }
+            
+            }.resume()
+    }
+    
+    
+    func myPOSTRequest(completion: @escaping (_ json: Any?, _ error: Error?)->()){
+        label.text = "Please wait..."
+        let output = encodeImage()
+        guard let url = URL(string: "http://35.201.9.84/api/test") else {return}
+        var request = URLRequest(url: url)
+        request.addValue("image/jpeg", forHTTPHeaderField: "Content-Type")
+        request.httpMethod = "POST"
+        request.httpBody = output
+        let session = URLSession.shared
+        session.dataTask(with: request){
+            (data, response, error) in
+            if let response = response{
+
+                let httpStatus = response as? HTTPURLResponse
+                httpResponse = httpStatus!.statusCode
+                print(httpStatus!.statusCode)
+            }
+            
+            if let data = data{
+                do{
+                    let json = try JSONDecoder().decode(Message.self, from: data)
+                    completion(json, error)
+                    
+                } catch{
+                    print(error)
+                }
+            }
+            }.resume()
+
+        
+    }
     
     
 }
