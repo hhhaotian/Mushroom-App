@@ -11,9 +11,9 @@ import UIKit
 struct Message: Decodable{
     
     let timestamp: String
-    let className: String
-    let classProb: String
-    let boxes: Array<Array<Float>>
+    let className: String?
+    let classProb: String?
+    let boxes: Array<Array<Float>>?
     
 }
 
@@ -33,7 +33,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     @IBOutlet weak var label: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     var predictImage: UIImage!
-    var labelInfo: String!
+    var labelInfo: String?
     var httpResponse: Int!
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     
@@ -44,8 +44,9 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         super.viewDidLoad()
         activityIndicator.center = self.view.center
         activityIndicator.hidesWhenStopped = true
-        activityIndicator.style = UIActivityIndicatorView.Style.gray
+        activityIndicator.style = UIActivityIndicatorView.Style.whiteLarge
         view.addSubview(activityIndicator)
+        
     }
     
     
@@ -55,10 +56,6 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         myGETRequest()
             { josn, error in
                 if let connection = josn as? Connection{
-//                    print(connection.timestamp)
-//                    print(httpResponse)
-//                    name = connection.timestamp
-//                    group.leave()
                     self.labelInfo = connection.timestamp
                     DispatchQueue.main.async() {
                         // your UI update code
@@ -80,16 +77,25 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         myPOSTRequest(){
             json, error in
             if let json = json as? Message{
+                print(json)
+                if json.className?.isEmpty ?? true{
+                    DispatchQueue.main.async {
+                        self.activityIndicator.stopAnimating()
+                        self.label.text = "Opos, I don't know this mushroom :("
+                        
+                    }
+                    return
+                }
                 self.labelInfo = json.className
                 var boxes: Array<Array<Float>>!
-                boxes = json.boxes
-                print(boxes[0] as Any)
+                print(json)
                 DispatchQueue.main.async() {
-                    // your UI update code
                     if self.httpResponse == 200{
                         self.label.text = self.labelInfo
                         self.activityIndicator.stopAnimating()
-//                        print(json.boxes)
+                        boxes = json.boxes
+//                        self.handleBoxes(boundaries: boxes)
+    
                     }
                     if self.httpResponse == 500{
                         self.activityIndicator.stopAnimating()
@@ -111,6 +117,30 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
 
     }
     
+    func handleBoxes(boundaries: Array<Array<Float>>){
+        let heightRatio = 467/self.predictImage.size.height
+        let widthRatio = 350/self.predictImage.size.width
+        
+        for boundary in boundaries{
+            let redView: UIView = UIView()
+            redView.backgroundColor = .red
+            let x = CGFloat(boundary[0])*heightRatio
+            let y = CGFloat(boundary[1]) * heightRatio
+            let width = CGFloat(boundary[2]) * widthRatio
+            let height = CGFloat(boundary[3]) * heightRatio
+            redView.frame = CGRect(x: x, y: y, width: width, height: height)
+            redView.alpha = 0.4
+            self.imageView.addSubview(redView)
+        }
+    }
+    
+    
+    func removeSubViews(){
+        for view in imageView.subviews{
+            view.removeFromSuperview()
+        }
+    }
+        
     
     
     @IBAction func photoSource(_ sender: Any) {
@@ -151,7 +181,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-        
+        self.removeSubViews()
         let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
         self.predictImage = image
         imageView.image = image

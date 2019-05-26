@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="BYZ-38-t0r">
-    <device id="retina4_7" orientation="portrait">
+    <device id="retina5_5" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
@@ -15,28 +15,28 @@
             <objects>
                 <viewController id="BYZ-38-t0r" customClass="ViewController" customModule="urlRequest" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="50" translatesAutoresizingMaskIntoConstraints="NO" id="zbF-85-92l">
-                                <rect key="frame" x="16" y="637" width="343" height="30"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" distribution="fillEqually" spacing="50" translatesAutoresizingMaskIntoConstraints="NO" id="zbF-85-92l" userLabel="Buttons Stack View">
+                                <rect key="frame" x="20" y="706" width="374" height="30"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2Mq-ki-BmP">
-                                        <rect key="frame" x="0.0" y="0.0" width="81" height="30"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="91.333333333333329" height="30"/>
                                         <state key="normal" title="GET"/>
                                         <connections>
                                             <action selector="getRequest:" destination="BYZ-38-t0r" eventType="touchUpInside" id="bKW-Zx-oRN"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Tfo-ig-wWQ">
-                                        <rect key="frame" x="131" y="0.0" width="81" height="30"/>
+                                        <rect key="frame" x="141.33333333333334" y="0.0" width="91.333333333333343" height="30"/>
                                         <state key="normal" title="Photo"/>
                                         <connections>
                                             <action selector="photoSource:" destination="BYZ-38-t0r" eventType="touchUpInside" id="nlT-hX-xJ0"/>
                                         </connections>
                                     </button>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="UCa-cv-as7">
-                                        <rect key="frame" x="262" y="0.0" width="81" height="30"/>
+                                        <rect key="frame" x="282.66666666666669" y="0.0" width="91.333333333333314" height="30"/>
                                         <state key="normal" title="POST"/>
                                         <connections>
                                             <action selector="postRequest:" destination="BYZ-38-t0r" eventType="touchUpInside" id="jOw-Nr-Lie"/>
@@ -44,30 +44,39 @@
                                     </button>
                                 </subviews>
                             </stackView>
-                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select a photo" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mco-Or-LXe">
-                                <rect key="frame" x="132.5" y="566.5" width="110.5" height="20.5"/>
-                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
-                                <nil key="textColor"/>
-                                <nil key="highlightedColor"/>
-                            </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="4Bo-QG-rso">
-                                <rect key="frame" x="12.5" y="128.5" width="350" height="250"/>
+                                <rect key="frame" x="32" y="54.666666666666686" width="350" height="467.00000000000006"/>
                                 <constraints>
                                     <constraint firstAttribute="width" constant="350" id="NPG-v7-nh5"/>
-                                    <constraint firstAttribute="height" constant="250" id="kUV-kc-Mey"/>
+                                    <constraint firstAttribute="height" constant="467" id="kUV-kc-Mey"/>
                                 </constraints>
                             </imageView>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" alignment="center" spacing="15" translatesAutoresizingMaskIntoConstraints="NO" id="Khj-i7-cyI" userLabel="Lable Button Stack View">
+                                <rect key="frame" x="151.66666666666666" y="590.66666666666663" width="110.66666666666666" height="65.333333333333371"/>
+                                <subviews>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="cVp-LG-dfc">
+                                        <rect key="frame" x="32.333333333333343" y="0.0" width="46" height="30"/>
+                                        <state key="normal" title="Button"/>
+                                    </button>
+                                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Select a photo" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="mco-Or-LXe">
+                                        <rect key="frame" x="0.0" y="45" width="110.66666666666667" height="20.333333333333329"/>
+                                        <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                        <nil key="textColor"/>
+                                        <nil key="highlightedColor"/>
+                                    </label>
+                                </subviews>
+                            </stackView>
                         </subviews>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
                             <constraint firstItem="4Bo-QG-rso" firstAttribute="centerY" secondItem="8bC-Xf-vdC" secondAttribute="centerY" constant="-80" id="4SD-fU-Y0I"/>
                             <constraint firstItem="zbF-85-92l" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" id="S75-mb-yYM"/>
-                            <constraint firstItem="mco-Or-LXe" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="TaB-m5-cfk"/>
+                            <constraint firstItem="Khj-i7-cyI" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="Tus-ku-uFL"/>
                             <constraint firstAttribute="trailingMargin" secondItem="zbF-85-92l" secondAttribute="trailing" id="WKI-fU-lSn"/>
-                            <constraint firstItem="zbF-85-92l" firstAttribute="top" secondItem="mco-Or-LXe" secondAttribute="bottom" constant="50" id="WNC-lz-Ftd"/>
                             <constraint firstItem="zbF-85-92l" firstAttribute="bottom" secondItem="8bC-Xf-vdC" secondAttribute="bottomMargin" id="YlA-V0-bmO"/>
                             <constraint firstItem="zbF-85-92l" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="atV-BU-AWr"/>
                             <constraint firstItem="4Bo-QG-rso" firstAttribute="centerX" secondItem="8bC-Xf-vdC" secondAttribute="centerX" id="nio-Fy-j1V"/>
+                            <constraint firstItem="zbF-85-92l" firstAttribute="top" secondItem="Khj-i7-cyI" secondAttribute="bottom" constant="50" id="tm8-Md-fsS"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
