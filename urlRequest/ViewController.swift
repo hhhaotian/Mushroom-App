@@ -13,7 +13,7 @@ struct Message: Decodable{
     let timestamp: String
     let className: String
     let classProb: String
-    let boxes: String
+    let boxes: Array<Array<Float>>
     
 }
 
@@ -23,28 +23,35 @@ struct Connection: Decodable {
 }
 
 
-var httpResponse: Int!
+
 
 class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate {
     
     
+    
+//    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var label: UILabel!
-    
     @IBOutlet weak var imageView: UIImageView!
-    
     var predictImage: UIImage!
-    
     var labelInfo: String!
+    var httpResponse: Int!
+    var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
+    
     
     override func viewDidLoad() {
         
         
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        activityIndicator.center = self.view.center
+        activityIndicator.hidesWhenStopped = true
+        activityIndicator.style = UIActivityIndicatorView.Style.gray
+        view.addSubview(activityIndicator)
     }
     
     
     @IBAction func getRequest(_ sender: Any) {
+//        indicator.startAnimating()
+        activityIndicator.startAnimating()
         myGETRequest()
             { josn, error in
                 if let connection = josn as? Connection{
@@ -55,8 +62,9 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
                     self.labelInfo = connection.timestamp
                     DispatchQueue.main.async() {
                         // your UI update code
-                        if httpResponse == 200{
+                        if self.httpResponse == 200{
                             self.label.text = self.labelInfo
+                            self.activityIndicator.stopAnimating()
                         }
                     }
                     
@@ -67,23 +75,24 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     }
     
     
-    
-    
     @IBAction func postRequest(_ sender: Any) {
-        
+        activityIndicator.startAnimating()
         myPOSTRequest(){
             json, error in
             if let json = json as? Message{
                 self.labelInfo = json.className
-//                var boxes: Array<Any>!
-//                boxes = json.boxes
+                var boxes: Array<Array<Float>>!
+                boxes = json.boxes
+                print(boxes[0] as Any)
                 DispatchQueue.main.async() {
                     // your UI update code
-                    if httpResponse == 200{
+                    if self.httpResponse == 200{
                         self.label.text = self.labelInfo
+                        self.activityIndicator.stopAnimating()
 //                        print(json.boxes)
                     }
-                    if httpResponse == 500{
+                    if self.httpResponse == 500{
+                        self.activityIndicator.stopAnimating()
                         self.label.text = "HTTP 500 Error"
                     }
                 }
@@ -163,10 +172,8 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         session.dataTask(with: url) { (data, response, error) in
             
             if let response = response{
-                //                print (response)
                 let httpStatus = response as? HTTPURLResponse
-//                if httpStatus!.statusCode == 200{
-                    httpResponse = httpStatus!.statusCode
+                self.httpResponse = httpStatus!.statusCode
                 print(httpStatus!.statusCode)
                
             }
@@ -202,7 +209,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
             if let response = response{
 
                 let httpStatus = response as? HTTPURLResponse
-                httpResponse = httpStatus!.statusCode
+                self.httpResponse = httpStatus!.statusCode
                 print(httpStatus!.statusCode)
             }
             
@@ -216,7 +223,6 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
                 }
             }
             }.resume()
-
         
     }
     
