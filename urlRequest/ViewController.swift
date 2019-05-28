@@ -13,6 +13,7 @@ struct Message: Decodable{
     let timestamp: String
     let className: String?
     let classProb: String?
+    let info: String?
     let boxes: Array<Array<Float>>?
     
 }
@@ -22,7 +23,7 @@ struct Connection: Decodable {
     let connection: String
 }
 
-
+var receivedData: Message!
 
 
 class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate {
@@ -31,15 +32,17 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
 //    @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     @IBOutlet weak var label: UILabel!
+    @IBOutlet weak var confidence: UILabel!
     @IBOutlet weak var imageView: UIImageView!
     var predictImage: UIImage!
     var labelInfo: String?
+    var predictConfidence: String!
     var httpResponse: Int!
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
     
+
     
     override func viewDidLoad() {
-        
         
         super.viewDidLoad()
         activityIndicator.center = self.view.center
@@ -77,6 +80,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         myPOSTRequest(){
             json, error in
             if let json = json as? Message{
+                receivedData = json
                 print(json)
                 if json.className?.isEmpty ?? true{
                     DispatchQueue.main.async {
@@ -87,6 +91,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
                     return
                 }
                 self.labelInfo = json.className
+                self.predictConfidence = json.classProb
                 var boxes: Array<Array<Float>>!
                 print(json)
                 DispatchQueue.main.async() {
@@ -94,7 +99,8 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
                         self.label.text = self.labelInfo
                         self.activityIndicator.stopAnimating()
                         boxes = json.boxes
-//                        self.handleBoxes(boundaries: boxes)
+                        self.handleBoxes(boundaries: boxes)
+                        self.confidence.text = self.predictConfidence
     
                     }
                     if self.httpResponse == 500{
@@ -110,7 +116,8 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     
     func encodeImage()-> Data{
-
+    
+        
         let imageData = predictImage.pngData()
         let encodeing = imageData?.base64EncodedData()
         return encodeing!
