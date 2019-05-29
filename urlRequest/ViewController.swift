@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import AVKit
+import Vision
 
 struct Message: Decodable{
     
@@ -26,7 +28,7 @@ struct Connection: Decodable {
 var receivedData: Message!
 
 
-class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate {
+class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
     
     
     
@@ -37,10 +39,12 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     var predictImage: UIImage!
     var labelInfo: String?
     var predictConfidence: String!
-    var httpResponse: Int!
+    var httpResponse: Int = 0
     var activityIndicator: UIActivityIndicatorView = UIActivityIndicatorView()
+    @IBOutlet weak var readMore: UIButton!
+    let model = ImageClassifier()
+    var localModel = false
     
-
     
     override func viewDidLoad() {
         
@@ -49,78 +53,77 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         activityIndicator.hidesWhenStopped = true
         activityIndicator.style = UIActivityIndicatorView.Style.whiteLarge
         view.addSubview(activityIndicator)
+        print(httpResponse)
+        readMore.isHidden = true
+//        confidence.isHidden = true
+        
         
     }
     
     
     @IBAction func getRequest(_ sender: Any) {
-//        indicator.startAnimating()
-        activityIndicator.startAnimating()
-        myGETRequest()
-            { josn, error in
-                if let connection = josn as? Connection{
-                    self.labelInfo = connection.timestamp
-                    DispatchQueue.main.async() {
-                        // your UI update code
-                        if self.httpResponse == 200{
-                            self.label.text = self.labelInfo
-                            self.activityIndicator.stopAnimating()
-                        }
-                    }
-                    
-                }
+        
+        localModel = !localModel
+        if localModel{
+            let captureSession = AVCaptureSession()
+            captureSession.sessionPreset = .photo
+            //
+            guard let captureDevice = AVCaptureDevice.default(for: .video) else{return}
             
+            guard let input = try? AVCaptureDeviceInput(device: captureDevice) else{return}
+            captureSession.addInput(input)
+            
+            captureSession.startRunning()
+            
+            let previewLayer = AVCaptureVideoPreviewLayer(session: captureSession)
+            previewLayer.frame = CGRect(x: 0, y: 0, width: 350, height: 467)
+            //        view.layer.addSublayer(previewLayer)
+            //        previewLayer.frame = view.frame
+            //        imageView.backgroundColor = .red
+            imageView.layer.addSublayer(previewLayer)
+            let dataOutput = AVCaptureVideoDataOutput()
+            dataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "videoQueue"))
+            captureSession.addOutput(dataOutput)
         }
-
-    }
-    
-    
-    @IBAction func postRequest(_ sender: Any) {
-        activityIndicator.startAnimating()
-        myPOSTRequest(){
-            json, error in
-            if let json = json as? Message{
-                receivedData = json
-                print(json)
-                if json.className?.isEmpty ?? true{
-                    DispatchQueue.main.async {
-                        self.activityIndicator.stopAnimating()
-                        self.label.text = "Opos, I don't know this mushroom :("
-                        
-                    }
-                    return
-                }
-                self.labelInfo = json.className
-                self.predictConfidence = json.classProb
-                var boxes: Array<Array<Float>>!
-                print(json)
-                DispatchQueue.main.async() {
-                    if self.httpResponse == 200{
-                        self.label.text = self.labelInfo
-                        self.activityIndicator.stopAnimating()
-                        boxes = json.boxes
-                        self.handleBoxes(boundaries: boxes)
-                        self.confidence.text = self.predictConfidence
-    
-                    }
-                    if self.httpResponse == 500{
-                        self.activityIndicator.stopAnimating()
-                        self.label.text = "HTTP 500 Error"
-                    }
-                }
-                
-            }
+        else{
+            imageView.layer.sublayers = nil
         }
         
+        
     }
+    
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        
+        guard let pixelBuffer: CVPixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else{return}
+        
+        
+        guard let model = try? VNCoreMLModel(for: ImageClassifier().model) else {return}
+        let request = VNCoreMLRequest(model: model){
+            (finishReq, err)in
+            
+            guard let results = finishReq.results as? [VNClassificationObservation] else{return}
+            guard let firstObeservation = results.first else{return}
+            
+            print(firstObeservation.identifier, firstObeservation.confidence)
+            DispatchQueue.main.async() {
+                self.label.text = firstObeservation.identifier
+            }
+            
+        }
+        
+        try? VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:]).perform([request])
+        
+    }
+
     
     
     func encodeImage()-> Data{
     
-        
+       
         let imageData = predictImage.pngData()
         let encodeing = imageData?.base64EncodedData()
         return encodeing!
+        
 
     }
     
@@ -151,10 +154,17 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     
     @IBAction func photoSource(_ sender: Any) {
+        if localModel{
+            localModel = false
+            imageView.layer.sublayers = nil
+        }
+        readMore.isHidden = true
+        confidence.isHidden = true
+        httpResponse = 0
         label.text = "Press POST buttom"
         print("photo button")
-        let imagePickerController = UIImagePickerController()
-        imagePickerController.delegate = self
+        let cloudImagePickerController = UIImagePickerController()
+        cloudImagePickerController.delegate = self
         
         let actionSheet = UIAlertController(title: "Photo source", message: "Select photo from", preferredStyle: .actionSheet)
         
@@ -162,8 +172,8 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
             
             if UIImagePickerController.isSourceTypeAvailable(.camera){
                 
-                imagePickerController.sourceType = .camera
-                self.present(imagePickerController, animated: true, completion: nil)
+                cloudImagePickerController.sourceType = .camera
+                self.present(cloudImagePickerController, animated: true, completion: nil)
                 
             }else{
                 
@@ -175,9 +185,9 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         
         actionSheet.addAction(UIAlertAction(title: "Image Library", style: .default, handler: { (UIAlertAction) in
             
-            imagePickerController.sourceType = .photoLibrary
-            self.present(imagePickerController, animated: true, completion: nil)
-            
+            cloudImagePickerController.sourceType = .photoLibrary
+            self.present(cloudImagePickerController, animated: true, completion: nil)
+//            self.remoteIdentify()
         }))
         
         actionSheet.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
@@ -189,11 +199,16 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         self.removeSubViews()
-        let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
-        self.predictImage = image
-        imageView.image = image
+//        let image = info[UIImagePickerController.InfoKey.originalImage] as! UIImage
+        do{
+        let image = info[UIImagePickerController.InfoKey.originalImage]
+        self.predictImage = image as? UIImage
+        imageView.image = image as? UIImage
         picker.dismiss(animated: true, completion: nil)
-        
+        self.remoteIdentify()
+        }catch{
+            return
+        }
     }
     
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
@@ -261,6 +276,49 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
             }
             }.resume()
         
+    }
+    
+    func remoteIdentify(){
+        activityIndicator.startAnimating()
+        myPOSTRequest(){
+            json, error in
+            if let json = json as? Message{
+                receivedData = json
+                print(json)
+                if json.className?.isEmpty ?? true{
+                    DispatchQueue.main.async {
+                        self.activityIndicator.stopAnimating()
+                        self.label.text = "Opos, I don't know this mushroom :("
+                        
+                    }
+                    return
+                }
+                self.labelInfo = json.className
+                self.predictConfidence = json.classProb
+                var boxes: Array<Array<Float>>!
+                print(json)
+                DispatchQueue.main.async() {
+                    if self.httpResponse == 200{
+                        self.label.text = self.labelInfo
+                        self.activityIndicator.stopAnimating()
+                        boxes = json.boxes
+                        self.handleBoxes(boundaries: boxes)
+                        self.confidence.text = self.predictConfidence
+                        self.readMore.isHidden = false
+                        self.confidence.isHidden = false
+                        
+                    }
+                    if self.httpResponse == 500{
+                        self.activityIndicator.stopAnimating()
+                        self.label.text = "HTTP 500 Error"
+                    }
+                    if self.httpResponse == 400{
+                        return
+                    }
+                }
+                
+            }
+        }
     }
     
     

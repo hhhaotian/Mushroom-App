@@ -25,7 +25,8 @@ class MushroomIntro: UIViewController {
         "shimeji mushroom":["feature":"Eatble", "info":"Inforamtion of shimeji mushroom"],
         "slippery jack":["feature":"Poision", "info":"Information of slippery jack"],
         "yellow-staining mushroom":["feature":"Poision", "info":"Information of yellow-staining mushroom"],
-        "green-spored parasol":["feature":"Poision", "info":"Information of green-spored parasol"]
+        "green-spored parasol":["feature":"Poision", "info":"Information of green-spored parasol"],
+        "none":["feature":"None", "info":"None"]
     ]
     
 //    mushroomsDict = ["button mushroom":["poison":"No","info":"Also called the table mushroom, white mushroom, common mushroom, cultivated mushroom, and called champignon de Paris in France, it is one of the most widely cultivated mushrooms in the world."]]
