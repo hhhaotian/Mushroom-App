@@ -11,8 +11,10 @@ import UIKit
 class MushroomIntro: UIViewController {
 
     @IBOutlet weak var mushroomName: UILabel!
-    @IBOutlet weak var inPosion: UILabel!
-    @IBOutlet weak var mushroomInfo: UITextView!
+  
+    @IBOutlet weak var infocell1: UILabel!
+    
+    
     let mushroomsDict = [
         "button mushroom":["feature":"Eatable","info":"Also called the table mushroom, white mushroom, common mushroom, cultivated mushroom, and called champignon de Paris in France, it is one of the most widely cultivated mushrooms in the world."],
         "death cap":["feature":"Poisonous", "info":"Smooth, yellowish-green to olive-brown cap; white gills; white stem; membranous skirt on stem; cup-like structure around the base of the stem."],
@@ -38,8 +40,8 @@ class MushroomIntro: UIViewController {
         do{
             mushroomType = receivedData.className ?? "none"
             mushroomName.text = mushroomType
-            inPosion.text = mushroomsDict[mushroomType]?["feature"]
-            mushroomInfo.text = mushroomsDict[mushroomType]?["info"]
+//            cell1.text = mushroomsDict[mushroomType]?["feature"]
+        
         }catch{
             print("no value")
         }
