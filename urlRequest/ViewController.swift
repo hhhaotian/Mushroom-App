@@ -9,6 +9,7 @@
 import UIKit
 import AVKit
 import Vision
+import SwiftyJSON
 
 struct Message: Decodable{
     
@@ -26,6 +27,8 @@ struct Connection: Decodable {
 }
 
 var receivedData: Message!
+
+var mushwiki: JSON!
 
 
 class ViewController: UIViewController, UINavigationControllerDelegate,  UIImagePickerControllerDelegate, AVCaptureVideoDataOutputSampleBufferDelegate {
@@ -46,6 +49,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     var localModel = false
     
     
+    
     override func viewDidLoad() {
         
         super.viewDidLoad()
@@ -57,7 +61,11 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
         readMore.isHidden = true
 //        confidence.isHidden = true
         
+        let path = Bundle.main.path(forResource:"data", ofType:"json")
+        let text = try! String(contentsOfFile:path!, encoding: String.Encoding.utf8)
+        let data = text.data(using: .utf8)
         
+        mushwiki = try? JSON(data: data!)
     }
     
     
@@ -118,13 +126,9 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     
     
     func encodeImage()-> Data{
-    
-       
         let imageData = predictImage.pngData()
         let encodeing = imageData?.base64EncodedData()
         return encodeing!
-        
-
     }
     
     func handleBoxes(boundaries: Array<Array<Float>>){
@@ -178,7 +182,7 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
             }else{
                 
                 print("Camera is not available")
-                
+        
             }
             
         }))
@@ -214,9 +218,6 @@ class ViewController: UIViewController, UINavigationControllerDelegate,  UIImage
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         picker.dismiss(animated: true, completion: nil)
     }
-    
-    
-    
     
     func myGETRequest(completion: @escaping (_ json: Any?, _ error: Error?)->()){
         guard let url = URL(string: "http://35.201.9.84/") else {return}

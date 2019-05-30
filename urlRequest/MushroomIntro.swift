@@ -7,7 +7,9 @@
 //
 
 import UIKit
+import SwiftyJSON
 
+<<<<<<< HEAD
 class MushroomIntro: UIViewController {
 
     @IBOutlet weak var mushroomName: UILabel!
@@ -30,12 +32,17 @@ class MushroomIntro: UIViewController {
         "green-spored parasol":["feature":"Poision", "info":"Information of green-spored parasol"],
         "none":["feature":"None", "info":"None"]
     ]
+=======
+class MushroomIntro: UIViewController, UITableViewDelegate, UITableViewDataSource {
+>>>>>>> 0ebb082bb5e6c1ae24e48859d21ee7b6c4e8e434
     
-//    mushroomsDict = ["button mushroom":["poison":"No","info":"Also called the table mushroom, white mushroom, common mushroom, cultivated mushroom, and called champignon de Paris in France, it is one of the most widely cultivated mushrooms in the world."]]
+    @IBOutlet var mushroomName: UILabel!
     
+    var mushroomType: String = ""
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+<<<<<<< HEAD
         var mushroomType: String = ""
         do{
             mushroomType = receivedData.className ?? "none"
@@ -45,13 +52,23 @@ class MushroomIntro: UIViewController {
         }catch{
             print("no value")
         }
+=======
+>>>>>>> 0ebb082bb5e6c1ae24e48859d21ee7b6c4e8e434
     }
     
-    
-    func mushroomIntro(mushroom: String){
-        
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        mushroomType = receivedData.className!
+        mushroomName.text = mushroomType
+        let num : Int = mushwiki[mushroomType]["feature"].array!.count
+        print("num of rows " + String(num))
+        return num
     }
     
-    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = UITableViewCell(style: UITableViewCell.CellStyle.default, reuseIdentifier: "cell")
+        cell.textLabel?.text = mushwiki[mushroomType]["feature"][indexPath.row].stringValue
+        print("cell value")
+        return cell
+    }
 
 }
